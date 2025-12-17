@@ -76,7 +76,8 @@ class AuthServices{
     }
   }
   //Update Profile
-  Future<bool> updateProfile({required String token, required String name}) async{
+  Future<bool> updateProfile({
+    required String token, required String name}) async{
     try{
       http.Response response = await http.put(
         Uri.parse("$baseURL/users/profile"),
@@ -84,6 +85,7 @@ class AuthServices{
           'Authorization': token,
           'Content-Type': 'application/json'
         },
+        body: jsonEncode({"name": name })
       );
       if(response.statusCode == 200 || response.statusCode == 201){
         return true;
