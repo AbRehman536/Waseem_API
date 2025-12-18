@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:waseem_api/providers/user_token_provider.dart';
 import 'package:waseem_api/service/auth.dart';
+import 'package:waseem_api/views/profile.dart';
 import 'package:waseem_api/views/register.dart';
 
 class Login extends StatefulWidget {
@@ -14,7 +16,6 @@ class _LoginState extends State<Login> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
-  get Provider => null;
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
@@ -31,7 +32,8 @@ class _LoginState extends State<Login> {
             isLoading = true;
             setState(() {});
             await AuthServices().loginUser(
-                email: emailController.text, password: passwordController.text)
+                email: emailController.text,
+                password: passwordController.text)
                 .then((value)async{
                   userProvider.setToken(value.token.toString());
                   AuthServices().getProfile(value.token.toString())
@@ -42,7 +44,9 @@ class _LoginState extends State<Login> {
                       return AlertDialog(
                         content: Text(userData.user!.name.toString()),
                         actions: [
-                          TextButton(onPressed: (){}, child: Text("Okay"))
+                          TextButton(onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile()));
+                          }, child: Text("Okay"))
                         ],
                       );
                     }, );

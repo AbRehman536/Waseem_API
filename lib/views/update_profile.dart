@@ -15,6 +15,13 @@ class _UpdateProfileState extends State<UpdateProfile> {
   TextEditingController nameController = TextEditingController();
   bool isLoading = false;
   @override
+  void initState(){
+    var userProvider = Provider.of<UserProvider>(context);
+    nameController = TextEditingController(
+      text: userProvider.getUser()!.user!.name.toString()
+    );
+  }
+  @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
     return Scaffold(

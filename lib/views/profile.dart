@@ -15,11 +15,11 @@ class Profile extends StatelessWidget {
       ),
       body: Column(children: [
         Text("Name: ${userProvider.getUser()!.user!.name.toString()}",
-        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 25),),
+            style: TextStyle(fontSize: 25,fontWeight: FontWeight.w800),),
         Text("Email: ${userProvider.getUser()!.user!.email.toString()}",
-        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 25),),
+            style: TextStyle(fontSize: 25,fontWeight: FontWeight.w800),),
         ElevatedButton(onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateProfile() ));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=>UpdateProfile()));
         }, child: Text("Update Profile"))
       ],),
     );
