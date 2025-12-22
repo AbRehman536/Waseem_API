@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/providers/user_token_provider.dart';
-import 'package:waseem_api/service/auth.dart';
-import 'package:waseem_api/views/profile.dart';
 
-class UpdateProfile extends StatefulWidget {
-  const UpdateProfile({super.key});
+import '../providers/user_token_provider.dart';
+import '../service/auth.dart';
+
+class UpdateProfileView extends StatefulWidget {
+  const UpdateProfileView({super.key});
 
   @override
-  State<UpdateProfile> createState() => _UpdateProfileState();
+  State<UpdateProfileView> createState() => _UpdateProfileViewState();
 }
 
-class _UpdateProfileState extends State<UpdateProfile> {
+class _UpdateProfileViewState extends State<UpdateProfileView> {
   TextEditingController nameController = TextEditingController();
   bool isLoading = false;
+
   @override
-  void initState(){
-    var userProvider = Provider.of<UserProvider>(context);
+  void initState() {
+    var userProvider = Provider.of<UserProvider>(context, listen: false);
     nameController = TextEditingController(
-      text: userProvider.getUser()!.user!.name.toString()
-    );
+        text: userProvider.getUser()!.user!.name.toString());
+    // TODO: implement initState
+    super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
@@ -28,48 +31,69 @@ class _UpdateProfileState extends State<UpdateProfile> {
       appBar: AppBar(
         title: Text("Update Profile"),
       ),
-      body: Column(children: [
-        TextField(controller: nameController,),
-        isLoading ? Center(child: CircularProgressIndicator(),)
-            :ElevatedButton(onPressed: ()async{
-              try{
-                isLoading = true;
-                setState(() {
+      body: Column(
+        children: [
+          TextField(
+            controller: nameController,
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          isLoading
+              ? Center(
+            child: CircularProgressIndicator(),
+          )
+              : ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Name cannot be empty.")));
+                  return;
+                }
 
-                });
-                await AuthServices().updateProfile(
-                    token: userProvider.getToken().toString(),
-                    name: nameController.text.toString())
-                    .then((value)async{
-                      await AuthServices().getProfile(
-                        userProvider.getToken().toString()
-                      ).then((userData){
-                        userProvider.setUser(userData);
-                      }).then((val){
-                        isLoading = false;
-                        setState(() {});
-                        showDialog(context: context, builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Text("Update Successfully"),
-                            actions: [
-                              TextButton(onPressed: (){
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>Profile()));
-                              }, child: Text("Okay"))
-                            ],
-                          );
-                        },);
-                      });
-                });
-              }catch(e){
-                isLoading = false;
-                setState(() {
+                try {
+                  isLoading = true;
+                  setState(() {});
+                  await AuthServices()
+                      .updateProfile(
+                      token: userProvider.getToken().toString(),
+                      name: nameController.text)
+                      .then((val)async {
+                    await AuthServices()
+                        .getProfile(userProvider.getToken().toString()).then((userData){
+                      userProvider.setUser(userData);
+                      isLoading = false;
+                      setState(() {});
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Message"),
+                              content: Text(
+                                  "Profile has been updated successfully"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("Okay"))
+                              ],
+                            );
+                          });
+                    });
 
-                });
-                ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(e.toString())));
-              }
-        }, child: Text("Update Profile")),
-      ],),
+                  });
+                } catch (e) {
+                  isLoading = false;
+                  setState(() {});
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(e.toString())));
+                }
+              },
+              child: Text("Update Profile"))
+        ],
+      ),
     );
   }
 }

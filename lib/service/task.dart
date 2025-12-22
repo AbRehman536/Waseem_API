@@ -1,173 +1,158 @@
 import 'dart:convert';
-
-import 'package:waseem_api/models/task.dart';
 import 'package:http/http.dart' as http;
-import 'package:waseem_api/models/taskListing.dart';
-class TaskServices{
 
-  //Create Task
-  Future<TaskModel> createTask({
-    required String description,
-    required String token
-  }) async{
-    try{
-      http.Response response = await http.post(
-          Uri.parse("{{TODO_URL}}/todos/add"),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization' : token,
-          },
-          body: jsonEncode({
-            "description": description,
-          })
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
+import '../models/task.dart';
+import '../models/taskListing.dart';
+
+class TaskServices {
+  String baseURL = "https://todo-nu-plum-19.vercel.app";
+
+  ///Create Task
+  Future<TaskModel> createTask(
+      {required String token, required String description}) async {
+    try {
+      http.Response response = await http.post(Uri.parse('$baseURL/todos/add'),
+          headers: {'Content-Type': 'application/json', 'Authorization': token},
+          body: jsonEncode({"description": description}));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return TaskModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Get All Task
-  Future<TaskListingModel> getAllTask(String token) async{
-    try{
-      http.Response response = await http.get(
-          Uri.parse("{{TODO_URL}}/todos/get"),
-          headers: {
-            'Authorization' : token,
-          },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
+
+  ///Get All Task
+  Future<TaskListingModel> getAllTask(String token) async {
+    try {
+      http.Response response = await http.get(Uri.parse('$baseURL/todos/get'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return TaskListingModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Get Completed Task
-  Future<TaskListingModel> getCompletedTask(String token) async{
-    try{
+
+  ///Get Completed Task
+  Future<TaskListingModel> getCompletedTask(String token) async {
+    try {
       http.Response response = await http.get(
-        Uri.parse("{{TODO_URL}}/todos/completed"),
-        headers: {
-          'Authorization' : token,
-        },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
+          Uri.parse('$baseURL/todos/completed'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return TaskListingModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Get InCompleted Task
-  Future<TaskListingModel> getInCompletedTask(String token) async{
-    try{
+
+  ///Get InCompleted Task
+
+  Future<TaskListingModel> getInCompletedTask(String token) async {
+    try {
       http.Response response = await http.get(
-        Uri.parse("{{TODO_URL}}/todos/incompleted"),
-        headers: {
-          'Authorization' : token,
-        },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
+          Uri.parse('$baseURL/todos/incomplete'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return TaskListingModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Update Task
-  Future<bool> updateTask({
-    required String token,
-    required String description,
-    required String taskID}) async{
-    try{
-      http.Response response = await http.patch(
-        Uri.parse("{{TODO_URL}}/todos/update/$taskID"),
-        headers: {
-          'Authorization' : token,
-          'Content-Type': 'application/json'
-        },
-          body: jsonEncode({
-            "description": description,
-          })
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
-        return true;
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+
+  ///Search Task
+  Future<TaskListingModel> searchTask(
+      {required String token, required String searchTask}) async {
+    try {
+      http.Response response = await http.get(
+          Uri.parse('$baseURL/todos/search?keywords=$searchTask'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return TaskListingModel.fromJson(jsonDecode(response.body));
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Delete Task
-  Future<bool> deleteTask({
-    required String token,
-    required String taskID}) async{
-    try{
+
+  ///Filter Task
+  Future<TaskListingModel> filterTask(
+      {required String token,
+        required String startDate,
+        required String endDate}) async {
+    try {
+      http.Response response = await http.get(
+          Uri.parse(
+              '$baseURL/todos/filter?startDate=$startDate&endDate=$endDate'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return TaskListingModel.fromJson(jsonDecode(response.body));
+      } else {
+        throw response.reasonPhrase.toString();
+      }
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+
+  ///Delete Task
+  Future<bool> deleteTask(
+      {required String token, required String taskID}) async {
+    try {
       http.Response response = await http.delete(
-          Uri.parse("{{TODO_URL}}/todos/delete/$taskID"),
-          headers: {
-            'Authorization' : token,
-          },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
+          Uri.parse('$baseURL/todos/delete/$taskID'),
+          headers: {'Authorization': token});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
-  //Filter Task
-  Future<TaskListingModel> filterTask({
-    required String token,
-    required String startDate,
-    required String endDate})
-  async{
-    try{
-      http.Response response = await http.get(
-        Uri.parse("{{TODO_URL}}/todos/filter?startDate=$startDate&endDate=$endDate"),
-        headers: {
-          'Authorization' : token,
-        },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
-        return TaskListingModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
+
+
+  ///Update Task
+  Future<bool> updateTask(
+      {required String token,
+        required String taskID,
+        required String description}) async {
+    try {
+      http.Response response = await http.patch(
+          Uri.parse('$baseURL/todos/update/$taskID'),
+          headers: {'Authorization': token, 'Content-Type': 'application/json'},
+          body: jsonEncode({'description': description}));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        throw response.reasonPhrase.toString();
       }
-    }catch(e){
-      throw Exception(e.toString());
-    }
-  }
-  //Search Task
-  Future<TaskListingModel> searchTask({
-    required String token, required String keyword}) async{
-    try{
-      http.Response response = await http.get(
-        Uri.parse("{{TODO_URL}}/todos/search?keywords= $keyword"),
-        headers: {
-          'Authorization' : token,
-        },
-      );
-      if(response.statusCode == 200 || response.statusCode == 201){
-        return TaskListingModel.fromJson(jsonDecode(response.body));
-      }else{
-        throw Exception(response.reasonPhrase.toString());
-      }
-    }catch(e){
-      throw Exception(e.toString());
+    } catch (e) {
+      throw e.toString();
     }
   }
 }

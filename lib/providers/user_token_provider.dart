@@ -1,23 +1,23 @@
 import 'package:flutter/cupertino.dart';
-import 'package:waseem_api/models/user.dart';
+import 'package:provider/provider.dart';
 
-class UserProvider extends ChangeNotifier{
+import '../models/user.dart';
+
+class UserProvider extends ChangeNotifier {
   UserModel? _userModel;
   String? _token;
 
-  //set User
-  void setUser(UserModel value){
-    _userModel = value;
+  void setUser(UserModel val) {
+    _userModel = val;
     notifyListeners();
   }
 
-  //set Token
-  void setToken(String value){
-    _token = value;
+  void setToken(String val) {
+    _token = val;
     notifyListeners();
   }
 
-  //get User
   UserModel? getUser() => _userModel;
+
   String? getToken() => _token;
 }
