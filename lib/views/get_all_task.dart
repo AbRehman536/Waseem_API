@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/models/task.dart';
-import 'package:waseem_api/models/taskListing.dart';
-import 'package:waseem_api/service/task.dart';
-import 'package:waseem_api/views/create_task.dart';
-import 'package:waseem_api/views/filter_task.dart';
-import 'package:waseem_api/views/get_Completed_task.dart';
-import 'package:waseem_api/views/get_incompleted_task.dart';
 import 'package:waseem_api/views/search_task.dart';
 import 'package:waseem_api/views/update_task.dart';
 
+import '../models/taskListing.dart';
 import '../providers/user_token_provider.dart';
+import '../service/task.dart';
+import 'create_task.dart';
+import 'filter_task.dart';
+import 'get_Completed_task.dart';
+import 'get_incompleted_task.dart';
 
-class GetAllTask extends StatelessWidget {
-  const GetAllTask({super.key});
+class GetAllTaskView extends StatefulWidget {
+  const GetAllTaskView({super.key});
+
+  @override
+  State<GetAllTaskView> createState() => _GetAllTaskViewState();
+}
+
+class _GetAllTaskViewState extends State<GetAllTaskView> {
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,69 +29,115 @@ class GetAllTask extends StatelessWidget {
       appBar: AppBar(
         title: Text("Get All Task"),
         actions: [
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>GetcompletedTask()));
-
-          }, icon: Icon(Icons.circle)),
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>GetIncompletedTask()));
-
-          }, icon: Icon(Icons.incomplete_circle)),
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>SearchTask()));
-
-          }, icon: Icon(Icons.search)),
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>FilterTask()));
-
-          }, icon: Icon(Icons.filter)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => SearchTaskView()));
+              },
+              icon: Icon(Icons.search)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => FilterTaskView()));
+              },
+              icon: Icon(Icons.filter)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GetCompletedTaskView()));
+              },
+              icon: Icon(Icons.circle)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GetInCompletedTaskView()));
+              },
+              icon: Icon(Icons.incomplete_circle)),
         ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: (){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>CreateTask()));
-      }),
-      body: FutureProvider.value(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => CreateTaskView()));
+        },
+        child: Icon(Icons.add),
+      ),
+      body: LoadingOverlay(
+        isLoading: isLoading,
+        // color: Colors.transparent,
+        child: FutureProvider.value(
           value: TaskServices().getAllTask(userProvider.getToken().toString()),
-          initialData: [TaskListingModel()],
-      builder: (context, child){
-            TaskListingModel taskListingModel = context.watch<TaskListingModel>();
-             return taskListingModel.tasks == null ?
-                Center(child: CircularProgressIndicator(),)
-            : ListView.builder(
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  leading: Icon(Icons.task),
-                  title: Text(taskListingModel.tasks![index].description.toString()),
-                  trailing: Row(children: [
-                    IconButton(onPressed: ()async{
-                      try{
-                        await TaskServices().deleteTask(
-                            token: userProvider.getToken().toString(),
-                            taskID: taskListingModel.tasks![index].id.toString())
-                            .then((value){
-                              showDialog(context: context, builder: (BuildContext context) {
-                                return AlertDialog(
-                                 content: Text("Task delete successfully"),
-                                  actions: [
-                                    TextButton(onPressed: (){
-                                      Navigator.pop(context);
-                                    }, child: Text("Okay"))
-                                  ],
-                                );
-                              }, );
-                        });
-                      }catch(e){
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    }, icon: Icon(Icons.delete)),
-                    IconButton(onPressed: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>UpdateTask(model: Task())));
-                    }, icon: Icon(Icons.edit))
-                  ],),
-                );
-              },);
-      },
+          initialData: TaskListingModel(),
+          builder: (context, child) {
+            TaskListingModel taskListingModel =
+            context.watch<TaskListingModel>();
+            return taskListingModel.tasks == null
+                ? Center(
+              child: CircularProgressIndicator(),
+            )
+                : ListView.builder(
+                itemCount: taskListingModel.tasks!.length,
+                itemBuilder: (context, i) {
+                  return ListTile(
+                    leading: Icon(Icons.task),
+                    title: Text(
+                        taskListingModel.tasks![i].description.toString()),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                            onPressed: () async {
+                              try {
+                                isLoading = true;
+                                setState(() {});
+                                await TaskServices()
+                                    .deleteTask(
+                                    token: userProvider
+                                        .getToken()
+                                        .toString(),
+                                    taskID: taskListingModel
+                                        .tasks![i].id
+                                        .toString())
+                                    .then((val) {
+                                  isLoading = false;
+                                  setState(() {});
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                      content: Text(
+                                          "Task has been deleted successfully")));
+                                });
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())));
+                              }
+                            },
+                            icon: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            )),
+                        IconButton(
+                            onPressed: () async {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UpdateTaskView(
+                                          model:
+                                          taskListingModel.tasks![i])));
+                            },
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.blue,
+                            )),
+                      ],
+                    ),
+                  );
+                });
+          },
+        ),
       ),
     );
   }

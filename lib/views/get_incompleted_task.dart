@@ -1,35 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/models/taskListing.dart';
-import 'package:waseem_api/service/task.dart';
 
+import '../models/taskListing.dart';
 import '../providers/user_token_provider.dart';
+import '../service/task.dart';
 
-class GetIncompletedTask extends StatelessWidget {
-  const GetIncompletedTask({super.key});
+class GetInCompletedTaskView extends StatelessWidget {
+  const GetInCompletedTaskView({super.key});
 
   @override
   Widget build(BuildContext context) {
+
     var userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Get In Completed Task"),
+        title: Text("Get InCompleted Task"),
       ),
       body: FutureProvider.value(
         value: TaskServices().getInCompletedTask(userProvider.getToken().toString()),
-        initialData: [TaskListingModel()],
-        builder: (context, child){
+        initialData: TaskListingModel(),
+        builder: (context, child) {
           TaskListingModel taskListingModel = context.watch<TaskListingModel>();
-          return taskListingModel.tasks == null ?
-          Center(child: CircularProgressIndicator(),)
+          return taskListingModel.tasks == null
+              ? Center(
+            child: CircularProgressIndicator(),
+          )
               : ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                leading: Icon(Icons.task),
-                title: Text(taskListingModel.tasks![index].description.toString()),
-                trailing: Icon(Icons.arrow_forward_ios),
-              );
-            },);
+              itemCount: taskListingModel.tasks!.length,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  leading: Icon(Icons.task),
+                  title:
+                  Text(taskListingModel.tasks![i].description.toString()),
+                );
+              });
         },
       ),
     );

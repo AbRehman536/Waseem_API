@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/views/profile.dart';
 import 'package:waseem_api/views/register.dart';
 
 import '../providers/user_token_provider.dart';
 import '../service/auth.dart';
+import 'get_all_task.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -82,7 +82,7 @@ class _LoginViewState extends State<LoginView> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) =>
-                                                  ProfileView()));
+                                                  GetAllTaskView()));
                                     },
                                     child: Text("Okay"))
                               ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:waseem_api/service/auth.dart';
 
-import '../service/auth.dart';
 import 'login.dart';
+
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
 

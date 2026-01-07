@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/models/task.dart';
-import 'package:waseem_api/providers/user_token_provider.dart';
-import 'package:waseem_api/service/task.dart';
-import 'package:waseem_api/views/get_all_task.dart';
 
-class UpdateTask extends StatefulWidget {
+import '../models/task.dart';
+import '../providers/user_token_provider.dart';
+import '../service/task.dart';
+import 'get_all_task.dart';
+
+class UpdateTaskView extends StatefulWidget {
   final Task model;
-  const UpdateTask({super.key, required this.model});
+
+  const UpdateTaskView({super.key, required this.model});
 
   @override
-  State<UpdateTask> createState() => _UpdateTaskState();
+  State<UpdateTaskView> createState() => _UpdateTaskViewState();
 }
 
-class _UpdateTaskState extends State<UpdateTask> {
+class _UpdateTaskViewState extends State<UpdateTaskView> {
   TextEditingController descriptionController = TextEditingController();
   bool isLoading = false;
+
+  @override
+  void initState() {
+    descriptionController =
+        TextEditingController(text: widget.model.description.toString());
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     var userProvider = Provider.of<UserProvider>(context);
@@ -23,41 +34,70 @@ class _UpdateTaskState extends State<UpdateTask> {
       appBar: AppBar(
         title: Text("Update Task"),
       ),
-      body: Column(children: [
-        TextField(
-          controller: descriptionController,
-        ),
-        isLoading ? Center(child: CircularProgressIndicator(),)
-            :ElevatedButton(onPressed: ()async{
-              try{
-                isLoading = true;
-                setState(() {});
-                await TaskServices().updateTask(
-                    token: userProvider.getToken().toString(),
-                    taskID: widget.model.id.toString(),
-                    description: descriptionController.text.toString())
-                    .then((value){
+      body: Column(
+        children: [
+          TextField(
+            controller: descriptionController,
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          isLoading
+              ? Center(
+            child: CircularProgressIndicator(),
+          )
+              : ElevatedButton(
+              onPressed: () async {
+                if (descriptionController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text("Description cannot be empty.")));
+                  return;
+                }
+                try {
+                  isLoading = true;
+                  setState(() {});
+                  await TaskServices()
+                      .updateTask(
+                      description: descriptionController.text,
+                      taskID: widget.model.id.toString(),
+                      token: userProvider.getToken().toString())
+                      .then((val) {
+                    isLoading = false;
+                    setState(() {});
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("Message"),
+                            content:
+                            Text("Task has been updated successfully"),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                GetAllTaskView()));
+                                  },
+                                  child: Text("Okay"))
+                            ],
+                          );
+                        });
+                  });
+                } catch (e) {
                   isLoading = false;
                   setState(() {});
-                  showDialog(context: context, builder: (BuildContext context) {
-                    return AlertDialog(
-                      content: Text("Update Successfully"),
-                      actions: [
-                        TextButton(onPressed: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> GetAllTask()));
-                        }, child: Text("Okay"))
-                      ],
-                    );
-                  }, );
-                });
-              }catch(e){
-                isLoading = false;
-                setState(() {});
-                ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(e.toString())));
-              }
-        }, child: Text("Update Task"))
-      ],),
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(e.toString())));
+                }
+              },
+              child: Text("Update Task")),
+          SizedBox(
+            height: 20,
+          ),
+        ],
+      ),
     );
   }
 }

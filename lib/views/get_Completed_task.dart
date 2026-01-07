@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:waseem_api/models/taskListing.dart';
-import 'package:waseem_api/service/task.dart';
 
+import '../models/taskListing.dart';
 import '../providers/user_token_provider.dart';
+import '../service/task.dart';
 
-class GetcompletedTask extends StatelessWidget {
-  const GetcompletedTask({super.key});
+class GetCompletedTaskView extends StatelessWidget {
+  const GetCompletedTaskView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +16,24 @@ class GetcompletedTask extends StatelessWidget {
         title: Text("Get Completed Task"),
       ),
       body: FutureProvider.value(
-        value: TaskServices().getCompletedTask(userProvider.getToken().toString()),
-        initialData: [TaskListingModel()],
-        builder: (context, child){
+        value:
+        TaskServices().getCompletedTask(userProvider.getToken().toString()),
+        initialData: TaskListingModel(),
+        builder: (context, child) {
           TaskListingModel taskListingModel = context.watch<TaskListingModel>();
-          return taskListingModel.tasks == null ?
-          Center(child: CircularProgressIndicator(),)
+          return taskListingModel.tasks == null
+              ? Center(
+            child: CircularProgressIndicator(),
+          )
               : ListView.builder(
-            itemBuilder: (BuildContext context, int index) {
-              return ListTile(
-                leading: Icon(Icons.task),
-                title: Text(taskListingModel.tasks![index].description.toString()),
-                trailing: Icon(Icons.arrow_forward_ios),
-              );
-            },);
+              itemCount: taskListingModel.tasks!.length,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  leading: Icon(Icons.task),
+                  title: Text(
+                      taskListingModel.tasks![i].description.toString()),
+                );
+              });
         },
       ),
     );
