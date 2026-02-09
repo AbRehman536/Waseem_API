@@ -60,7 +60,8 @@ class _UpdateProfileViewState extends State<UpdateProfileView> {
                       name: nameController.text)
                       .then((val)async {
                     await AuthServices()
-                        .getProfile(userProvider.getToken().toString()).then((userData){
+                        .getProfile(userProvider.getToken().toString())
+                        .then((userData){
                       userProvider.setUser(userData);
                       isLoading = false;
                       setState(() {});

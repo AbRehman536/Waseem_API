@@ -89,6 +89,39 @@ class _GetAllTaskViewState extends State<GetAllTaskView> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        Checkbox(
+                          value: taskListingModel.tasks![i].complete ?? false,
+                          onChanged: taskListingModel.tasks![i].complete == true
+                              ? null
+                              : (val) async {
+                            try {
+                              setState(() => isLoading = true);
+
+                              await TaskServices().markTaskAsCompleted(
+                                token: userProvider.getToken().toString(),
+                                taskID: taskListingModel.tasks![i].id!,
+                              );
+
+                              setState(() => isLoading = false);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Task has been completed successfully"),
+                                ),
+                              );
+
+                              /// 🔥 REFRESH TASK LIST
+                              setState(() {});
+                            } catch (e) {
+                              setState(() => isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
+                          },
+                        ),
+
+
                         IconButton(
                             onPressed: () async {
                               try {

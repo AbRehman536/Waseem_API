@@ -70,31 +70,44 @@ class _FilterTaskViewState extends State<FilterTaskView> {
               ],
             ),
             ElevatedButton(
-                onPressed: () async {
-                  try {
+              onPressed: () async {
+                if (firstDate == null || lastDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please pick both start and end dates")),
+                  );
+                  return;
+                }
+
+                try {
+                  setState(() {
                     isLoading = true;
-
                     taskListingModel = null;
-                    setState(() {});
+                  });
 
-                    await TaskServices()
-                        .filterTask(
-                        token: user.getToken().toString(),
-                        startDate: firstDate.toString(),
-                        endDate: lastDate.toString())
-                        .then((val) {
-                      isLoading = false;
-                      taskListingModel = val;
-                      setState(() {});
-                    });
-                  } catch (e) {
+                  // Convert dates to ISO string
+                  final start = firstDate!.toUtc().toIso8601String();
+                  final end = lastDate!.add(const Duration(days: 1)).toUtc().toIso8601String();
+
+                  TaskListingModel filteredTasks = await TaskServices().filterTask(
+                    token: user.getToken().toString(),
+                    startDate: start,
+                    endDate: end,
+                  );
+
+                  setState(() {
                     isLoading = false;
-                    setState(() {});
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(e.toString())));
-                  }
-                },
-                child: Text("Filter Task")),
+                    taskListingModel = filteredTasks;
+                  });
+                } catch (e) {
+                  setState(() => isLoading = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              },
+              child: const Text("Filter Task"),
+            ),
+
             if (isLoading == true)
               Center(
                 child: CircularProgressIndicator(),
